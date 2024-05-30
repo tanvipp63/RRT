@@ -384,11 +384,9 @@ def robotFollower(start:np.ndarray, waypoints:np.ndarray, stepSize:float):
             magnitude = np.sqrt(vector[0,0]**2 + vector[1,0]**2)
             norm = vector/magnitude
             step = norm * robot.v
-            print(step)
 
             #Update theta
             newTh = np.rad2deg(np.arctan(step[1,0]/step[0,0]))
-            print(newTh)
             
             #update x and y
             numSteps = int(stepSize/robot.v)
@@ -396,8 +394,21 @@ def robotFollower(start:np.ndarray, waypoints:np.ndarray, stepSize:float):
                 robot.move(step[0,0], step[1,0], newTh)
                 plotRobot(robot)
 
+#Algorithm measures of success
+#Measure time
+def timingDecorator(func):
+    def wrapper(*args, **kwargs):
+        startTime = time.perf_counter()
+        result = func(*args, **kwargs)
+        endTime = time.perf_counter()
+        elapsed = endTime - startTime
+        print(f"{func.__name__} executed in {elapsed:.6f} seconds")
+        return result
+    return wrapper
 
-    
+
+#RRT algorithms
+@timingDecorator
 def runRRT(start:np.ndarray, goal:np.ndarray, numIterations: int, grid:np.ndarray, stepSize:float, rrt:RRTAlgorithm, success:bool):
     """
     Runs rrt algorithm
@@ -444,6 +455,7 @@ def runRRT(start:np.ndarray, goal:np.ndarray, numIterations: int, grid:np.ndarra
                     break
     return success    
 
+@timingDecorator
 def runGreedyRRT(start:np.ndarray, goal:np.ndarray, numIterations: int, grid:np.ndarray, stepSize:float, rrt:RRTAlgorithm, success:bool):
     """
     Tests a biased 'greedy' approach to RRT based on A*
@@ -539,6 +551,7 @@ if __name__ == "__main__":
     #Call RRT algorithm
     rrt = RRTAlgorithm(start, goal, numIterations, grid, stepSize)
     success = False #flag to detect if path was successful or not
+    #run rrt algorithm (Greedy or normal)
     success = runGreedyRRT(start, goal, numIterations, grid, stepSize, rrt, success)
 
     if success:
@@ -557,4 +570,5 @@ if __name__ == "__main__":
         print("Path not found")
     plt.show()    
 
-
+    #Algorithm measures of success
+    print(f"RRT Path Distance: {rrt.path_distance}")
