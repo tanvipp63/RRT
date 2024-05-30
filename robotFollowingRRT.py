@@ -378,22 +378,23 @@ def robotFollower(start:np.ndarray, waypoints:np.ndarray, stepSize:float):
         plotRobot(robot)
 
         #Move robot
-        #Find step
-        vector = np.array([[waypoints[1][0]-waypoints[0][0]], [waypoints[1][1]-waypoints[0][1]]])
-        magnitude = np.sqrt(vector[0,0]**2 + vector[1,0]**2)
-        norm = vector/magnitude
-        step = norm * robot.v
-        print(step)
+        for i in range(len(waypoints) - 1):
+            #Find step
+            vector = np.array([[waypoints[i+1][0]-waypoints[i][0]], [waypoints[i+1][1]-waypoints[i][1]]])
+            magnitude = np.sqrt(vector[0,0]**2 + vector[1,0]**2)
+            norm = vector/magnitude
+            step = norm * robot.v
+            print(step)
 
-        #Update theta
-        newTh = np.rad2deg(np.arctan(step[1,0]/step[0,0]))
-        print(newTh)
-        
-        #update x and y
-        numSteps = int(stepSize/robot.v)
-        for i in range(2):
-            robot.move(step[0,0], step[1,0], newTh)
-            plotRobot(robot)
+            #Update theta
+            newTh = np.rad2deg(np.arctan(step[1,0]/step[0,0]))
+            print(newTh)
+            
+            #update x and y
+            numSteps = int(stepSize/robot.v)
+            for i in range(numSteps):
+                robot.move(step[0,0], step[1,0], newTh)
+                plotRobot(robot)
 
 
     
