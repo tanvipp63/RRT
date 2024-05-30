@@ -444,6 +444,77 @@ def runRRT(start:np.ndarray, goal:np.ndarray, numIterations: int, grid:np.ndarra
                     break
     return success    
 
+def runGreedyRRT(start:np.ndarray, goal:np.ndarray, numIterations: int, grid:np.ndarray, stepSize:float, rrt:RRTAlgorithm, success:bool):
+    """
+    Tests a biased 'greedy' approach to RRT based on A*
+    It heavily biases the algorithm towards the goal
+    """
+    for count in range(rrt.iterations):
+        rrt.resetNearestValues()
+
+        #sample point as goal
+        xrandGoal = np.array([[goal[0]], [goal[1]]])
+        plt.plot(xrandGoal[0,0], xrandGoal[1,0], 'mo')
+        rrt.findNearest(rrt.randomTree, xrandGoal)
+        print("Rand point goal", xrandGoal[0,0], xrandGoal[1,0])
+        print("nearest", rrt.nearestNode.locationX, rrt.nearestNode.locationY)
+        
+        #Attempt to get to new point with new edge
+        newPoint = rrt.steerToPoint(rrt.nearestNode, xrandGoal)
+        print("New Point", newPoint[0,0], newPoint[1,0])
+        invalidNewPoint = newPoint.all() == None
+
+        if not invalidNewPoint:
+            #Check if new edge is valid
+            if not rrt.isInObstacle(rrt.nearestNode, newPoint):
+                rrt.addChild(newPoint[0,0], newPoint[1,0])
+
+                #Plot new edge
+                ax.plot([rrt.nearestNode.locationX, newPoint[0,0]], [rrt.nearestNode.locationY, newPoint[1,0]], 'yo', linestyle = "--")
+                plt.pause(0.10)
+
+                if rrt.goalFound(newPoint):
+                    rrt.addChild(goal[0], goal[1])
+                    success = True
+                    break
+            
+            if rrt.isInObstacle(rrt.nearestNode, newPoint):
+                for n in range(1000): #1000 was chosen as per the research paper
+                    rrt.resetNearestValues()
+
+                    #sample point as random
+                    xrand = rrt.sampleAPoint()
+                    plt.plot(xrand[0,0], xrand[1,0], 'mo')
+                    rrt.findNearest(rrt.randomTree, xrand)
+                    print("Rand point", xrand[0,0], xrand[1,0])
+                    print("nearest", rrt.nearestNode.locationX, rrt.nearestNode.locationY)
+                    
+                    #Attempt to get to new point with new edge
+                    newPoint = rrt.steerToPoint(rrt.nearestNode, xrand)
+                    print("New Point", newPoint[0,0], newPoint[1,0])
+                    invalidNewPoint = newPoint.all() == None
+
+                    if not invalidNewPoint:
+                        #Check if new edge is valid
+                        if not rrt.isInObstacle(rrt.nearestNode, newPoint):
+                            rrt.addChild(newPoint[0,0], newPoint[1,0])
+
+                            #Plot new edge
+                            ax.plot([rrt.nearestNode.locationX, newPoint[0,0]], [rrt.nearestNode.locationY, newPoint[1,0]], 'yo', linestyle = "--")
+                            plt.pause(0.10)
+
+                            if rrt.goalFound(newPoint):
+                                rrt.addChild(goal[0], goal[1])
+                                success = True
+                                break
+
+                            break #break out of nested for loop
+
+    return success    
+
+
+
+
 if __name__ == "__main__":
     #Specify inputs
     grid = np.load('cspace.npy') 
@@ -468,7 +539,7 @@ if __name__ == "__main__":
     #Call RRT algorithm
     rrt = RRTAlgorithm(start, goal, numIterations, grid, stepSize)
     success = False #flag to detect if path was successful or not
-    success = runRRT(start, goal, numIterations, grid, stepSize, rrt, success)
+    success = runGreedyRRT(start, goal, numIterations, grid, stepSize, rrt, success)
 
     if success:
         rrt.retraceRRTPath(rrt.goal)
