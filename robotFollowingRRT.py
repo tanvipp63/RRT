@@ -297,18 +297,20 @@ class RRTAlgorithm():
         self.path_distance += self.rho
         self.retraceRRTPath(goal.parent)
 
-class robot():
+class Robot():
     def __init__(self, x:np.ndarray):
         """
         Robot is 1m wide and 1.5m long, and rectangular in shape
         The x axis is pointing right positive, y axis pointing up positive
         x is a (3,1) array with the pose of the robot. The axis is located at the centre of the robot.
         th is given in degrees
+        It's velocity is constant and at 0.5m/s
         """
         self.x = x[0,0]
         self.y = x[1,0]
         self.th = np.deg2rad(x[2,0])
         self.updateCorners()
+        self.v = 0.5
     
     def updateCorners(self):
         """
@@ -331,22 +333,21 @@ class robot():
         self.c3 = corners[:, 3:4]
         self.c4 = corners[:, 2:3]        
 
-    def move(self, newX:float, newY:float):
+    def move(self, dx:float, dy:float, newth:float):
         """
         Gets the positions of the corners of the robot.
         c1 is top left corner
         c2 is top right corner
         c4 is bottom left corner
         c3 is bottom right corner
-        """
-        self.x = newX
-        self.y = newY
-        self.updateCorners()
 
-    def rotate(self, newth:float):
+        Params:
+        dx, dy, changes in step
+        new theta
+
         """
-        Applies rotation matrix to get corners at new orientation
-        """
+        self.x += dx
+        self.y += dy
         self.th = np.deg2rad(newth)
         self.updateCorners()
     
@@ -360,18 +361,41 @@ class robot():
             cornersPlot.append((corners[i][0,0], corners[i][1,0]))
         cornersPlot.append((corners[0][0,0], corners[0][1,0]))
         return cornersPlot
+    
+def plotRobot(robot:Robot):
+        robotRect = shapely.Polygon(robot.getCorners())
+        x, y = robotRect.exterior.xy
+        ax.plot(x, y, 'r-')
+        plt.pause(0.1)
 
-def robotFollower(start:np.ndarray):
+def robotFollower(start:np.ndarray, waypoints:np.ndarray, stepSize:float):
         """
         Plots the path of the robot along waypoints
         """
         #Init robot
         mu = np.array([[start[0]], [start[1]], [0]])
-        rob = robot(mu)
-        rob = shapely.Polygon(rob.getCorners())
-        x, y = rob.exterior.xy
-        ax.plot(x, y, 'r-')
-        plt.pause(0.1)
+        robot = Robot(mu)
+        plotRobot(robot)
+
+        #Move robot
+        #Find step
+        vector = np.array([[waypoints[1][0]-waypoints[0][0]], [waypoints[1][1]-waypoints[0][1]]])
+        magnitude = np.sqrt(vector[0,0]**2 + vector[1,0]**2)
+        norm = vector/magnitude
+        step = norm * robot.v
+        print(step)
+
+        #Update theta
+        newTh = np.rad2deg(np.arctan(step[1,0]/step[0,0]))
+        print(newTh)
+        
+        #update x and y
+        numSteps = int(stepSize/robot.v)
+        for i in range(2):
+            robot.move(step[0,0], step[1,0], newTh)
+            plotRobot(robot)
+
+
     
 def runRRT(start:np.ndarray, goal:np.ndarray, numIterations: int, grid:np.ndarray, stepSize:float, rrt:RRTAlgorithm, success:bool):
     """
@@ -455,7 +479,7 @@ if __name__ == "__main__":
             plt.pause(0.1)
 
         #Robot follower
-        robotFollower(start)
+        robotFollower(start, rrt.Waypoints, rrt.rho)
 
     else:
         print("Path not found")
