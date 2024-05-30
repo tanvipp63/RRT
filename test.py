@@ -7,10 +7,15 @@ start = np.array([10.0, 10.0])
 
 #Robot follower
 #Init robot
-mu = np.array([[start[0]], [start[1]], [0]])
-robot = robot(mu)
-robot = shapely.Polygon(robot.getCorners())
-x1, y1 = robot.exterior.xy
-plt.plot(x1, y1)
-plt.grid()
+
+fig, ax = plt.subplots(figsize = (7,7))
+
+x=0
+y=0
+for i in range(5):
+    ax.plot(x,y,'ro')
+    x+=1
+    y+=1
+    plt.pause(0.10)
+ax.plot(0.5,0.5,'yo')
 plt.show()

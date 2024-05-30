@@ -6,6 +6,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import random
 import shapely
+import time
 
 
 
@@ -367,11 +368,9 @@ def robotFollower(start:np.ndarray):
         #Init robot
         mu = np.array([[start[0]], [start[1]], [0]])
         rob = robot(mu)
-        print(rob.getCorners())
         rob = shapely.Polygon(rob.getCorners())
-        x1, y1 = rob.exterior.xy
-        print(rob.area)
-        plt.plot(x1, y1)
+        x, y = rob.exterior.xy
+        plt.plot(x, y, 'r-')
     
 def runRRT(start:np.ndarray, goal:np.ndarray, numIterations: int, grid:np.ndarray, stepSize:float, rrt:RRTAlgorithm, success:bool):
     """
@@ -410,7 +409,7 @@ def runRRT(start:np.ndarray, goal:np.ndarray, numIterations: int, grid:np.ndarra
                 rrt.addChild(newPoint[0,0], newPoint[1,0])
 
                 #Plot new edge
-                plt.plot([rrt.nearestNode.locationX, newPoint[0,0]], [rrt.nearestNode.locationY, newPoint[1,0]], 'yo', linestyle = "--")
+                ax.plot([rrt.nearestNode.locationX, newPoint[0,0]], [rrt.nearestNode.locationY, newPoint[1,0]], 'yo', linestyle = "--")
                 plt.pause(0.10)
 
                 if rrt.goalFound(newPoint):
@@ -448,18 +447,18 @@ if __name__ == "__main__":
     if success:
         rrt.retraceRRTPath(rrt.goal)
         rrt.Waypoints.insert(0,startNode.toArray())
-        print(rrt.Waypoints)
 
         #Plot final path
         for i in range(len(rrt.Waypoints) - 1):
-            plt.plot([rrt.Waypoints[i][0], rrt.Waypoints[i+1][0]], [rrt.Waypoints[i][1], rrt.Waypoints[i+1][1]], 'go', linestyle = "--")
-            plt.pause(0.10)
+            ax.plot([rrt.Waypoints[i][0], rrt.Waypoints[i+1][0]], [rrt.Waypoints[i][1], rrt.Waypoints[i+1][1]], 'go', linestyle = "--")
+            plt.pause(0.1)
 
         #Robot follower
-        robotFollower(start)
-        plt.show()    
+        ax.plot(0.5, 1.75,'ro')
+        plt.pause(0.1)
 
     else:
         print("Path not found")
+    plt.show()    
 
 
