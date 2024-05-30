@@ -370,7 +370,8 @@ def robotFollower(start:np.ndarray):
         rob = robot(mu)
         rob = shapely.Polygon(rob.getCorners())
         x, y = rob.exterior.xy
-        plt.plot(x, y, 'r-')
+        ax.plot(x, y, 'r-')
+        plt.pause(0.1)
     
 def runRRT(start:np.ndarray, goal:np.ndarray, numIterations: int, grid:np.ndarray, stepSize:float, rrt:RRTAlgorithm, success:bool):
     """
@@ -454,8 +455,7 @@ if __name__ == "__main__":
             plt.pause(0.1)
 
         #Robot follower
-        ax.plot(0.5, 1.75,'ro')
-        plt.pause(0.1)
+        robotFollower(start)
 
     else:
         print("Path not found")
