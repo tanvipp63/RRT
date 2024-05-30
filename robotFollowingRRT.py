@@ -307,10 +307,28 @@ class robot():
         self.x = x[0,0]
         self.y = x[1,0]
         self.th = np.deg2rad(x[2,0])
-        self.c1 = np.array([[self.x - 0.5], [self.y + 0.75]])
-        self.c2 = np.array([[self.x + 0.5], [self.y + 0.75]])
-        self.c4 = np.array([[self.x - 0.5], [self.y - 0.75]])
-        self.c3 = np.array([[self.x + 0.5], [self.y - 0.75]])
+        self.updateCorners()
+    
+    def updateCorners(self):
+        """
+        Updates the corners of the robot based on its current pose.
+        """
+        # Define the robot corners in the local frame
+        corners = np.array([[-0.5, 0.75], [0.5, 0.75], [-0.5, -0.75], [0.5, -0.75]]).T
+
+        # Create the rotation matrix
+        RE2 = np.array([[np.cos(self.th), -np.sin(self.th)], [np.sin(self.th), np.cos(self.th)]])
+
+        # Apply the rotation and translation to the corners
+        corners = RE2 @ corners
+        corners[0, :] += self.x
+        corners[1, :] += self.y
+
+        # Update the corner points
+        self.c1 = corners[:, 0:1]
+        self.c2 = corners[:, 1:2]
+        self.c3 = corners[:, 3:4]
+        self.c4 = corners[:, 2:3]        
 
     def move(self, newX:float, newY:float):
         """
@@ -322,21 +340,14 @@ class robot():
         """
         self.x = newX
         self.y = newY
-        self.c1 = np.array([[self.x - 0.5], [self.y + 0.75]])
-        self.c2 = np.array([[self.x + 0.5], [self.y + 0.75]])
-        self.c4 = np.array([[self.x - 0.5], [self.y - 0.75]])
-        self.c3 = np.array([[self.x + 0.5], [self.y - 0.75]])
+        self.updateCorners()
 
     def rotate(self, newth:float):
         """
         Applies rotation matrix to get corners at new orientation
         """
-        self.th = newth
-        RE2 = np.array([[np.cos(self.th), -np.sin(self.th)], [np.sin(self.th), np.cos(self.th)]])
-        self.c1 = RE2@self.c1
-        self.c2 = RE2@self.c2
-        self.c3 = RE2@self.c3
-        self.c4 = RE2@self.c4
+        self.th = np.deg2rad(newth)
+        self.updateCorners()
     
     def getCorners(self):
         """
@@ -346,6 +357,7 @@ class robot():
         cornersPlot = []
         for i in range(4):
             cornersPlot.append((corners[i][0,0], corners[i][1,0]))
+        cornersPlot.append((corners[0][0,0], corners[0][1,0]))
         return cornersPlot
 
 def robotFollower(start:np.ndarray):
@@ -354,13 +366,12 @@ def robotFollower(start:np.ndarray):
         """
         #Init robot
         mu = np.array([[start[0]], [start[1]], [0]])
-        robot = robot(mu)
-        robot = shapely.Polygon(robot.getCorners())
-        x1, y1 = robot.exterior.xy
-        print(x1, y1)
+        rob = robot(mu)
+        print(rob.getCorners())
+        rob = shapely.Polygon(rob.getCorners())
+        x1, y1 = rob.exterior.xy
+        print(rob.area)
         plt.plot(x1, y1)
-        plt.grid()
-        plt.show()    
     
 def runRRT(start:np.ndarray, goal:np.ndarray, numIterations: int, grid:np.ndarray, stepSize:float, rrt:RRTAlgorithm, success:bool):
     """
@@ -446,6 +457,7 @@ if __name__ == "__main__":
 
         #Robot follower
         robotFollower(start)
+        plt.show()    
 
     else:
         print("Path not found")
