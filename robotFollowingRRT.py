@@ -347,6 +347,20 @@ class robot():
         for i in range(4):
             cornersPlot.append((corners[i][0,0], corners[i][1,0]))
         return cornersPlot
+
+def robotFollower(start:np.ndarray):
+        """
+        Plots the path of the robot along waypoints
+        """
+        #Init robot
+        mu = np.array([[start[0]], [start[1]], [0]])
+        robot = robot(mu)
+        robot = shapely.Polygon(robot.getCorners())
+        x1, y1 = robot.exterior.xy
+        print(x1, y1)
+        plt.plot(x1, y1)
+        plt.grid()
+        plt.show()    
     
 def runRRT(start:np.ndarray, goal:np.ndarray, numIterations: int, grid:np.ndarray, stepSize:float, rrt:RRTAlgorithm, success:bool):
     """
@@ -399,9 +413,9 @@ if __name__ == "__main__":
     grid = np.load('cspace.npy') 
     start = np.array([1.0, 1.0]) #Adjust these coords
     startNode = treeNode(1.0, 1.0)
-    goal = np.array([4, 1.75])
+    goal = np.array([15, 17.5])
     numIterations = 100
-    stepSize = 1
+    stepSize = 1.5
     #goal region
     goalRegion = plt.Circle((goal[0], goal[1]), stepSize, color='b', fill = False)
 
@@ -431,15 +445,8 @@ if __name__ == "__main__":
             plt.pause(0.10)
 
         #Robot follower
-        #Init robot
-        mu = np.array([[start[0]], [start[1]], [0]])
-        robot = robot(mu)
-        robot = shapely.Polygon(robot.getCorners())
-        x1, y1 = robot.exterior.xy
-        print(x1, y1)
-        plt.plot(x1, y1)
-        plt.grid()
-        plt.show()
+        robotFollower(start)
+
     else:
         print("Path not found")
 
