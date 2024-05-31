@@ -377,7 +377,7 @@ def robotFollower(start:np.ndarray, waypoints:np.ndarray, stepSize:float):
         Plots the path of the robot along waypoints
         """
         #Init robot
-        mu = np.array([[start[0]], [start[1]], [0]])
+        mu = np.array([[start[0]], [start[1]], [90]])
         robot = Robot(mu)
         plotRobot(robot)
 
@@ -393,7 +393,7 @@ def robotFollower(start:np.ndarray, waypoints:np.ndarray, stepSize:float):
             newTh = np.rad2deg(np.arctan(step[1,0]/step[0,0]))
             
             #update x and y
-            numSteps = int(stepSize/robot.v)
+            numSteps = round(magnitude/robot.v)
             for i in range(numSteps):
                 robot.move(step[0,0], step[1,0], newTh)
                 plotRobot(robot)
@@ -652,7 +652,7 @@ if __name__ == "__main__":
         plotRRTPath(rrtGoal, rrtGoal.nearestNode)
 
         #Robot follower
-        #robotFollower(start, rrtStart.Waypoints, rrtStart.rho)
+        robotFollower(start, rrtStart.Waypoints, rrtStart.rho)
 
     else:
         print("Path not found")
