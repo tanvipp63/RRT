@@ -560,11 +560,11 @@ def runRRTConnect(start:np.ndarray, goal:np.ndarray, numIterations: int, grid:np
             if not rrtStart.isInObstacle(startTreeNode, np.array([[goalTreeNode.locationX], [goalTreeNode.locationY]])):
                 rrtStart.nearestNode = startTreeNode
                 rrtStart.addChild(goalTreeNode.locationX, goalTreeNode.locationY)
-                rrtStart.endNode = goalTreeNode
+                rrtStart.endNode = rrtStart.nearestNode.children[len(rrtStart.nearestNode.children) - 1]
 
                 # rrtGoal.nearestNode = goalTreeNode
                 # rrtGoal.addChild(startTreeNode.locationX, startTreeNode.locationY)
-                # rrtGoal.endNode = startTreeNode
+                rrtGoal.endNode = rrtGoal.nearestNode.children[len(rrtGoal.nearestNode.children) - 1]
 
                 print(f"Final edge startRRT: ({rrtStart.nearestNode.locationX, rrtStart.nearestNode.locationY}) ({goalTreeNode.locationX, goalTreeNode.locationY})")
                 print(f"Final edge goalRRT: ({rrtGoal.nearestNode.locationX, rrtGoal.nearestNode.locationY}) ({startTreeNode.locationX, startTreeNode.locationY})")
@@ -589,11 +589,11 @@ def extendRRT(rrt:RRTAlgorithm, xrand:np.ndarray, marker:str):
     nearestNeightbour: treeNode to be returned if the new point is invalid
     """
     rrt.findNearest(rrt.randomTree, xrand)
-    print("Rand point", xrand[0,0], xrand[1,0])
-    print("Nearest", rrt.nearestNode.locationX, rrt.nearestNode.locationY)
+    #print("Rand point", xrand[0,0], xrand[1,0])
+    #print("Nearest", rrt.nearestNode.locationX, rrt.nearestNode.locationY)
     #Attempt to get to new point with new edge
     newPoint = rrt.steerToPoint(rrt.nearestNode, xrand)
-    print("New Point", newPoint[0,0], newPoint[1,0])
+    #print("New Point", newPoint[0,0], newPoint[1,0])
     invalidNewPoint = newPoint.all() == None
 
     if not invalidNewPoint:
@@ -612,7 +612,7 @@ def extendRRT(rrt:RRTAlgorithm, xrand:np.ndarray, marker:str):
 
 def plotRRTPath(rrt:RRTAlgorithm, endNode:treeNode):
     rrt.retraceRRTPath(endNode)
-    rrt.Waypoints.insert(0,startNode.toArray())
+    rrt.Waypoints.insert(0,rrt.randomTree.toArray())
 
     #Plot final path
     for i in range(len(rrt.Waypoints) - 1):
@@ -623,7 +623,6 @@ if __name__ == "__main__":
     #Specify inputs
     grid = np.load('cspace.npy') 
     start = np.array([1.0, 1.0]) #Adjust these coords
-    startNode = treeNode(1.0, 1.0)
     goal = np.array([15, 17.5])
     numIterations = 100
     stepSize = 1.5
@@ -651,7 +650,7 @@ if __name__ == "__main__":
     if success:
         print("success")
         #plotRRTPath(rrtStart, rrtStart.endNode)
-        #plotRRTPath(rrtGoal, rrtGoal.endNode)
+        plotRRTPath(rrtGoal, rrtGoal.endNode)
 
         #Robot follower
         #robotFollower(start, rrtStart.Waypoints, rrtStart.rho)
