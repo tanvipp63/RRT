@@ -80,6 +80,7 @@ class RRTAlgorithm():
         self.numWaypoints = 0
         self.Waypoints = []
         self.numNodes = 1
+        self.endNode = None #Used only for RRTConnect to find point to retrace from
 
 
     def sampleAPoint(self):
@@ -559,17 +560,20 @@ def runRRTConnect(start:np.ndarray, goal:np.ndarray, numIterations: int, grid:np
             if not rrtStart.isInObstacle(startTreeNode, np.array([[goalTreeNode.locationX], [goalTreeNode.locationY]])):
                 rrtStart.nearestNode = startTreeNode
                 rrtStart.addChild(goalTreeNode.locationX, goalTreeNode.locationY)
-                rrtGoal.nearestNode = goalTreeNode
-                rrtGoal.addChild(startTreeNode.locationX, startTreeNode.locationY)
+                rrtStart.endNode = goalTreeNode
+
+                # rrtGoal.nearestNode = goalTreeNode
+                # rrtGoal.addChild(startTreeNode.locationX, startTreeNode.locationY)
+                # rrtGoal.endNode = startTreeNode
 
                 print(f"Final edge startRRT: ({rrtStart.nearestNode.locationX, rrtStart.nearestNode.locationY}) ({goalTreeNode.locationX, goalTreeNode.locationY})")
                 print(f"Final edge goalRRT: ({rrtGoal.nearestNode.locationX, rrtGoal.nearestNode.locationY}) ({startTreeNode.locationX, startTreeNode.locationY})")
                 
                 #Plot new edges
-                ax.plot([rrtStart.nearestNode.locationX, goalTreeNode.locationX], [rrtStart.nearestNode.locationY, goalTreeNode.locationY], 'yo', linestyle = "--")
+                ax.plot([rrtStart.nearestNode.locationX, goalTreeNode.locationX], [rrtStart.nearestNode.locationY, goalTreeNode.locationY], 'o', linestyle = "--", color='orange')
                 plt.pause(0.10)                
-                ax.plot([rrtGoal.nearestNode.locationX, startTreeNode.locationX], [rrtGoal.nearestNode.locationY, startTreeNode.locationY], 'bo', linestyle = "--")
-                plt.pause(0.10)
+                # ax.plot([rrtGoal.nearestNode.locationX, startTreeNode.locationX], [rrtGoal.nearestNode.locationY, startTreeNode.locationY], 'o', linestyle = "--", color='orange')
+                # plt.pause(0.10)
                 
                 success = True
                 return success
@@ -606,7 +610,7 @@ def extendRRT(rrt:RRTAlgorithm, xrand:np.ndarray, marker:str):
         
     return rrt.nearestNode
 
-def retraceRRTPath(rrt:RRTAlgorithm, endNode:treeNode):
+def plotRRTPath(rrt:RRTAlgorithm, endNode:treeNode):
     rrt.retraceRRTPath(endNode)
     rrt.Waypoints.insert(0,startNode.toArray())
 
@@ -646,8 +650,8 @@ if __name__ == "__main__":
 
     if success:
         print("success")
-        #retraceRRTPath(rrtStart, rrtStart.nearestNode.children[0])
-        #retraceRRTPath(rrtGoal, rrtGoal.nearestNode.children[0])
+        #plotRRTPath(rrtStart, rrtStart.endNode)
+        #plotRRTPath(rrtGoal, rrtGoal.endNode)
 
         #Robot follower
         #robotFollower(start, rrtStart.Waypoints, rrtStart.rho)
