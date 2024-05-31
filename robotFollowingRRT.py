@@ -561,10 +561,9 @@ def runRRTConnect(start:np.ndarray, goal:np.ndarray, numIterations: int, grid:np
                 #Add edge that connects trees to start goal rrt
                 rrtStart.findNearest(rrtStart.randomTree, np.array([[startTreeNode.locationX], [startTreeNode.locationY]]))
                 rrtStart.addChild(goalTreeNode.locationX, goalTreeNode.locationY)
-                rrtStart.endNode = startTreeNode
+                rrtStart.endNode = rrtStart.nearestNode.children[len(rrtStart.nearestNode.children) - 1]
 
                 rrtGoal.findNearest(rrtGoal.randomTree, np.array([[goalTreeNode.locationX], [goalTreeNode.locationY]]))
-                rrtGoal.endNode = goalTreeNode
 
                 print(f"Final edge startRRT: ({rrtStart.nearestNode.locationX, rrtStart.nearestNode.locationY}) ({goalTreeNode.locationX, goalTreeNode.locationY})")
                 print(f"Final edge goalRRT: ({rrtGoal.nearestNode.locationX, rrtGoal.nearestNode.locationY}) ({startTreeNode.locationX, startTreeNode.locationY})")
@@ -649,7 +648,7 @@ if __name__ == "__main__":
 
     if success:
         print("success")
-        plotRRTPath(rrtStart, rrtStart.nearestNode)
+        plotRRTPath(rrtStart, rrtStart.endNode)
         plotRRTPath(rrtGoal, rrtGoal.nearestNode)
 
         #Robot follower
