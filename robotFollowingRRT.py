@@ -558,13 +558,13 @@ def runRRTConnect(start:np.ndarray, goal:np.ndarray, numIterations: int, grid:np
         distance = np.sqrt((startTreeNode.locationX - goalTreeNode.locationX)**2 + (startTreeNode.locationY - goalTreeNode.locationY)**2)
         if distance <= rrtStart.rho:
             if not rrtStart.isInObstacle(startTreeNode, np.array([[goalTreeNode.locationX], [goalTreeNode.locationY]])):
-                rrtStart.nearestNode = startTreeNode
+                #Add edge that connects trees to start goal rrt
+                rrtStart.findNearest(rrtStart.randomTree, np.array([[startTreeNode.locationX], [startTreeNode.locationY]]))
                 rrtStart.addChild(goalTreeNode.locationX, goalTreeNode.locationY)
-                rrtStart.endNode = rrtStart.nearestNode.children[len(rrtStart.nearestNode.children) - 1]
+                rrtStart.endNode = startTreeNode
 
-                # rrtGoal.nearestNode = goalTreeNode
-                # rrtGoal.addChild(startTreeNode.locationX, startTreeNode.locationY)
-                rrtGoal.endNode = rrtGoal.nearestNode.children[len(rrtGoal.nearestNode.children) - 1]
+                rrtGoal.findNearest(rrtGoal.randomTree, np.array([[goalTreeNode.locationX], [goalTreeNode.locationY]]))
+                rrtGoal.endNode = goalTreeNode
 
                 print(f"Final edge startRRT: ({rrtStart.nearestNode.locationX, rrtStart.nearestNode.locationY}) ({goalTreeNode.locationX, goalTreeNode.locationY})")
                 print(f"Final edge goalRRT: ({rrtGoal.nearestNode.locationX, rrtGoal.nearestNode.locationY}) ({startTreeNode.locationX, startTreeNode.locationY})")
@@ -649,8 +649,8 @@ if __name__ == "__main__":
 
     if success:
         print("success")
-        #plotRRTPath(rrtStart, rrtStart.endNode)
-        plotRRTPath(rrtGoal, rrtGoal.endNode)
+        plotRRTPath(rrtStart, rrtStart.nearestNode)
+        plotRRTPath(rrtGoal, rrtGoal.nearestNode)
 
         #Robot follower
         #robotFollower(start, rrtStart.Waypoints, rrtStart.rho)
