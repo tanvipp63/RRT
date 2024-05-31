@@ -79,6 +79,7 @@ class RRTAlgorithm():
         self.nearestDist = 10000
         self.numWaypoints = 0
         self.Waypoints = []
+        self.numNodes = 1
 
 
     def sampleAPoint(self):
@@ -267,10 +268,12 @@ class RRTAlgorithm():
         if (self.goalFound(np.array([[locationX], [locationY]]))):
             self.nearestNode.children.append(self.goal)
             self.goal.parent = self.nearestNode
+            self.numNodes += 1
         else:
             child = treeNode(locationX, locationY)
             self.nearestNode.children.append(child)
             child.parent = self.nearestNode
+            self.numNodes += 1
 
     def resetNearestValues(self):
         """
@@ -524,8 +527,88 @@ def runGreedyRRT(start:np.ndarray, goal:np.ndarray, numIterations: int, grid:np.
 
     return success    
 
+@timingDecorator
+def runRRTConnect(start:np.ndarray, goal:np.ndarray, numIterations: int, grid:np.ndarray, stepSize:float, rrtStart:RRTAlgorithm, rrtGoal:RRTAlgorithm, success:bool):
+    """
+    This function implements the RRT Connect Algorithm by J.Kuffner.
+    It extends two RRTs (one from the start, one from the goal), and connects them.
+    Hence, it takes in two trees as inputs.
+    The number of iterations in both trees is the same
 
+    Outputs:
+    success: bool that tells whether goal is found i.e. when both trees connect
+    """
+    for i in range(rrtStart.iterations):
+        #Reset
+        rrtStart.resetNearestValues()
+        rrtGoal.resetNearestValues()
 
+        #Find sample point
+        xrand = rrtStart.sampleAPoint()
+        plt.plot(xrand[0,0], xrand[1,0], 'mo')
+
+        #Extend start tree
+        startTreeNode = extendRRT(rrtStart, xrand, 'yo')
+
+        #Extend goal tree
+        goalTreeNode = extendRRT(rrtGoal, xrand, 'bo')
+
+        #If both nodes are close, connect trees
+        distance = np.sqrt((startTreeNode.locationX - goalTreeNode.locationX)**2 + (startTreeNode.locationY - goalTreeNode.locationY)**2)
+        if distance <= rrtStart.rho:
+            if not rrtStart.isInObstacle(startTreeNode, np.array([[goalTreeNode.locationX], [goalTreeNode.locationY]])):
+                rrtStart.addChild(goalTreeNode.locationX, goalTreeNode.locationY)
+                rrtGoal.addChild(startTreeNode.locationX, startTreeNode.locationY)
+                
+                #Plot new edges
+                ax.plot([rrtStart.nearestNode.locationX, goalTreeNode.locationX], [rrtStart.nearestNode.locationY, goalTreeNode.locationY], 'yo', linestyle = "--")
+                plt.pause(0.10)                
+                ax.plot([rrtGoal.nearestNode.locationX, startTreeNode.locationX], [rrtGoal.nearestNode.locationY, startTreeNode.locationY], 'bo', linestyle = "--")
+                plt.pause(0.10)
+                
+                success = True
+                return success
+    return success
+
+def extendRRT(rrt:RRTAlgorithm, xrand:np.ndarray, marker:str):
+    """
+    This function extends the tree by finding nearest neighbour,
+    checking for collision and then adding it to the tree
+
+    Outputs:
+    newPoint: treeNode point that is added to the tree if it is valid
+    nearestNeightbour: treeNode to be returned if the new point is invalid
+    """
+    rrt.findNearest(rrt.randomTree, xrand)
+    print("Rand point", xrand[0,0], xrand[1,0])
+    print("Nearest", rrt.nearestNode.locationX, rrt.nearestNode.locationY)
+    #Attempt to get to new point with new edge
+    newPoint = rrt.steerToPoint(rrt.nearestNode, xrand)
+    print("New Point", newPoint[0,0], newPoint[1,0])
+    invalidNewPoint = newPoint.all() == None
+
+    if not invalidNewPoint:
+        #Check if new edge is valid
+        if not rrt.isInObstacle(rrt.nearestNode, newPoint):
+            rrt.addChild(newPoint[0,0], newPoint[1,0])
+
+            #Plot new edge
+            ax.plot([rrt.nearestNode.locationX, newPoint[0,0]], [rrt.nearestNode.locationY, newPoint[1,0]], marker, linestyle = "--")
+            plt.pause(0.10)
+
+            newPointNode = treeNode(newPoint[0,0], newPoint[1,0])
+            return newPointNode
+        
+    return rrt.nearestNode
+
+def retraceRRTPath(rrt:RRTAlgorithm):
+    rrt.retraceRRTPath(rrt.goal)
+    rrt.Waypoints.insert(0,startNode.toArray())
+
+    #Plot final path
+    for i in range(len(rrt.Waypoints) - 1):
+        ax.plot([rrt.Waypoints[i][0], rrt.Waypoints[i+1][0]], [rrt.Waypoints[i][1], rrt.Waypoints[i+1][1]], 'go', linestyle = "--")
+        plt.pause(0.1)    
 
 if __name__ == "__main__":
     #Specify inputs
@@ -555,13 +638,7 @@ if __name__ == "__main__":
     success = runGreedyRRT(start, goal, numIterations, grid, stepSize, rrt, success)
 
     if success:
-        rrt.retraceRRTPath(rrt.goal)
-        rrt.Waypoints.insert(0,startNode.toArray())
-
-        #Plot final path
-        for i in range(len(rrt.Waypoints) - 1):
-            ax.plot([rrt.Waypoints[i][0], rrt.Waypoints[i+1][0]], [rrt.Waypoints[i][1], rrt.Waypoints[i+1][1]], 'go', linestyle = "--")
-            plt.pause(0.1)
+        retraceRRTPath(rrt)
 
         #Robot follower
         robotFollower(start, rrt.Waypoints, rrt.rho)
@@ -572,3 +649,4 @@ if __name__ == "__main__":
 
     #Algorithm measures of success
     print(f"RRT Path Distance: {rrt.path_distance}")
+    print(f"Number of nodes in tree: {rrt.numNodes}")
