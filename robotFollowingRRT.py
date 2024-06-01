@@ -316,14 +316,14 @@ class Robot():
         self.y = x[1,0]
         self.th = np.deg2rad(x[2,0])
         self.updateCorners()
-        self.v = 0.5
+        self.v = 5
     
     def updateCorners(self):
         """
         Updates the corners of the robot based on its current pose.
         """
         # Define the robot corners in the local frame
-        corners = np.array([[-0.5, 0.75], [0.5, 0.75], [-0.5, -0.75], [0.5, -0.75]]).T
+        corners = np.array([[-5, 7.5], [5, 7.5], [-5, -7.5], [5, -7.5]]).T
 
         # Create the rotation matrix
         RE2 = np.array([[np.cos(self.th), -np.sin(self.th)], [np.sin(self.th), np.cos(self.th)]])
@@ -623,10 +623,10 @@ def plotRRTPath(rrt:RRTAlgorithm, endNode:treeNode):
 if __name__ == "__main__":
     #Specify inputs
     grid = np.load('cspace.npy') 
-    start = np.array([1.0, 1.0]) #Adjust these coords
-    goal = np.array([15, 17.5])
-    numIterations = 100
-    stepSize = 1.5
+    start = np.array([0.75, 0.5]) #Adjust these coords
+    goal = np.array([225, 225])
+    numIterations = 300
+    stepSize = 15
     #goal region
     goalRegion = plt.Circle((goal[0], goal[1]), stepSize, color='b', fill = False)
 
