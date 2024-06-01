@@ -80,6 +80,7 @@ class RRTAlgorithm():
         self.numWaypoints = 0
         self.Waypoints = []
         self.numNodes = 1
+        self.numSampledNodes = 0
         self.endNode = None #Used only for RRTConnect to find point to retrace from
 
 
@@ -94,6 +95,7 @@ class RRTAlgorithm():
 
         x = random.randint(1, self.grid.shape[1]-1)
         y = random.randint(1, self.grid.shape[0]-1)
+        self.numSampledNodes += 1
 
         return np.array([[x], [y]])
 
@@ -664,5 +666,5 @@ if __name__ == "__main__":
     plt.show()    
 
     #Algorithm measures of success
-    print(f"RRT Path Distance: {rrtStart.path_distance}")
-    print(f"Number of nodes in tree: {rrtStart.numNodes}")
+    print(f"RRT Path Distance: {rrtStart.path_distance + rrtGoal.path_distance}")
+    print(f"Number of sampled points: {rrtStart.numSampledNodes}")
