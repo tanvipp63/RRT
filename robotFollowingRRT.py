@@ -654,6 +654,11 @@ if __name__ == "__main__":
         #Robot follower
         robotFollower(start, rrtStart.Waypoints, rrtStart.rho)
 
+        #Second tree for RRTConnect
+        reversedRRTGoal = rrtGoal.Waypoints.copy()
+        reversedRRTGoal.reverse()
+        robotFollower(np.array([reversedRRTGoal[0][0], reversedRRTGoal[0][1]]), reversedRRTGoal, rrtGoal.rho) #initialise the robot outside of robot follower
+
     else:
         print("Path not found")
     plt.show()    
