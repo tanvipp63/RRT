@@ -11,3 +11,5 @@ The program includes
 
 Test results are saved in different folders.
 The three algorithms were tested against four different maps taken from another paper (simple, complex, indoors, narrow passages).
+The file, readImage.py is used to filter the image of each cspace before robotFollowingRRT.py is run on it.
+readImage.py uses a LINEAR filter and turns the image into an occupancy grid for the algorithm to use as a map.
