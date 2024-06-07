@@ -647,11 +647,12 @@ if __name__ == "__main__":
     #Run RRT algorithm (Greedy, normal, or RRTConnect)
     success = False #flag to detect if path was successful or not
     #success = runRRTConnect(start, goal, numIterations, grid, stepSize, rrtStart, rrtGoal, success)
-    success = runRRT(start, goal, numIterations, grid, stepSize, rrtStart, success)
+    success = runGreedyRRT(start, goal, numIterations, grid, stepSize, rrtStart, success)
 
     if success:
         print("success")
-        plotRRTPath(rrtStart, rrtStart.endNode)
+        plotRRTPath(rrtStart, rrtStart.goal)
+        #plotRRTPath(rrtStart, rrtStart.endNode) #RRT connect
         #plotRRTPath(rrtGoal, rrtGoal.nearestNode) #RRT connect
 
         #Robot follower
@@ -672,3 +673,5 @@ if __name__ == "__main__":
     print(f"RRT Path Distance: {rrtStart.path_distance + rrtGoal.path_distance}")
     print(f"Number of sampled points: {rrtStart.numSampledNodes + rrtGoal.numSampledNodes}")
     """
+    print(f"RRT Path Distance: {rrtStart.path_distance}")
+    print(f"Number of sampled points: {rrtStart.numSampledNodes}")
