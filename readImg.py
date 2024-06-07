@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 #Generate occupancy grid to implement RRT in
-img = Image.open('cspace2.png')
+img = Image.open('cspace1.png')
 
 img = ImageOps.grayscale(img)
 

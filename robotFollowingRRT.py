@@ -624,7 +624,7 @@ if __name__ == "__main__":
     #Specify inputs
     grid = np.load('cspace.npy') 
     start = np.array([0.75, 0.5]) #Adjust these coords
-    goal = np.array([225, 225])
+    goal = np.array([230, 225])
     numIterations = 300
     stepSize = 15
     #goal region
@@ -642,29 +642,33 @@ if __name__ == "__main__":
 
     #Initialise an RRT
     rrtStart = RRTAlgorithm(start, goal, numIterations, grid, stepSize)
-    rrtGoal = RRTAlgorithm(goal, start, numIterations, grid, stepSize)
+    #rrtGoal = RRTAlgorithm(goal, start, numIterations, grid, stepSize) #RRTConnect
 
     #Run RRT algorithm (Greedy, normal, or RRTConnect)
     success = False #flag to detect if path was successful or not
-    success = runRRTConnect(start, goal, numIterations, grid, stepSize, rrtStart, rrtGoal, success)
+    #success = runRRTConnect(start, goal, numIterations, grid, stepSize, rrtStart, rrtGoal, success)
+    success = runRRT(start, goal, numIterations, grid, stepSize, rrtStart, success)
 
     if success:
         print("success")
         plotRRTPath(rrtStart, rrtStart.endNode)
-        plotRRTPath(rrtGoal, rrtGoal.nearestNode)
+        #plotRRTPath(rrtGoal, rrtGoal.nearestNode) #RRT connect
 
         #Robot follower
         robotFollower(start, rrtStart.Waypoints, rrtStart.rho)
 
-        #Second tree for RRTConnect
-        reversedRRTGoal = rrtGoal.Waypoints.copy()
-        reversedRRTGoal.reverse()
-        robotFollower(np.array([reversedRRTGoal[0][0], reversedRRTGoal[0][1]]), reversedRRTGoal, rrtGoal.rho) #initialise the robot outside of robot follower
+        # #Second tree for RRTConnect
+        # reversedRRTGoal = rrtGoal.Waypoints.copy()
+        # reversedRRTGoal.reverse()
+        # robotFollower(np.array([reversedRRTGoal[0][0], reversedRRTGoal[0][1]]), reversedRRTGoal, rrtGoal.rho) #initialise the robot outside of robot follower
 
     else:
         print("Path not found")
-    plt.show()    
+    plt.show()
 
     #Algorithm measures of success
+    """
+    RRT CONNECT
     print(f"RRT Path Distance: {rrtStart.path_distance + rrtGoal.path_distance}")
-    print(f"Number of sampled points: {rrtStart.numSampledNodes}")
+    print(f"Number of sampled points: {rrtStart.numSampledNodes + rrtGoal.numSampledNodes}")
+    """
